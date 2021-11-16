@@ -22,16 +22,6 @@ f = list(map(float, datContent[0][0].split(",")))
 c = list(map(float, datContent[1][0].split(",")))
 c = np.reshape(c, (I, J))
 
-# T = []
-# for i in range(2, 2+I + J):
-#     T.append(list(map(float, datContent[i][0].split(","))))
-# T = np.array(T)
-#
-# W = []
-# for i in range(2+I+J, 2+2*I+2*J):
-#     W.append(list(map(float, datContent[i][0].split(","))))
-# W = np.array(W)
-
 d = []
 for i in range(2+2*I+2*J, 2+2*I+2*J + 100):
     d.append(list(map(float, datContent[i][0].split(","))))
@@ -73,6 +63,7 @@ p = [1.0/nS] * nS         # scenario probabilities (assuming equally likely scen
 I = range(I)
 J = range(J)
 S = range(nS)
+
 #%%
 
 def ModifyAndSolveSP(s):

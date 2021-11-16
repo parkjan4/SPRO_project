@@ -11,7 +11,7 @@ import time
 
 ##### Building the Data #####
 
-fname = "Project\cap101.dat"
+fname = "cap101.dat"
 datContent = [i.strip('[]\n,').split() for i in open(fname).readlines()]
 
 I = 25
@@ -21,16 +21,6 @@ S = 5000
 f = list(map(float, datContent[0][0].split(",")))
 c = list(map(float, datContent[1][0].split(",")))
 c = np.reshape(c, (I, J))
-
-# T = []
-# for i in range(2, 2+I + J):
-#     T.append(list(map(float, datContent[i][0].split(","))))
-# T = np.array(T)
-#
-# W = []
-# for i in range(2+I+J, 2+2*I+2*J):
-#     W.append(list(map(float, datContent[i][0].split(","))))
-# W = np.array(W)
 
 d = []
 for i in range(2+2*I+2*J, 2+2*I+2*J + 100):
@@ -45,7 +35,6 @@ b = max(d.sum(axis=1))
 u = int(re.findall(r"[-+]?\d*\.\d+|\d+", datContent[-1][0])[0])*np.ones(I).reshape((-1,1))
 
 CutViolationTolerance = 0.0001
-OptionForSubproblem = 0
 
 nS = len(d)   # the number of scenarios
 p = [1.0/nS] * nS         # scenario probabilities (assuming equally likely scenarios)
