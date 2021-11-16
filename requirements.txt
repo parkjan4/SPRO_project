@@ -1,0 +1,9 @@
+numpy
+pandas
+matplotlib
+gurobipy
+xlrd
+scipy
+matplotlib
+# remember to setup Gurobi
+
