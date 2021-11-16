@@ -9,6 +9,11 @@ import time
 
 
 def importData(fname, I, J, S):
+    """
+    Given a file name and the dimensions of the facilities, customers
+    and scenarios in that file, import the data
+    """
+
     datContent = [i.strip('[]\n,').split() for i in open(fname).readlines()]
 
     f = list(map(float, datContent[0][0].split(",")))
@@ -31,6 +36,10 @@ def importData(fname, I, J, S):
 
 
 def reduceProblemSize(f, c, u, d, I, J, S):
+    """
+    provided the large problem formulation, this function reduces the problem size
+    to the given smaller values of I, J and S
+    """
     f = f[0:I]
     c = c[0:I, 0:J]
     u = u[0:I]
@@ -40,6 +49,9 @@ def reduceProblemSize(f, c, u, d, I, J, S):
 
 
 def ExtensiveForm(f, c, u, d, b, p, I, J, S):
+    """
+    Solve the model via extensive form
+    """
     # Build second-stage objective coefficients: Note that we scale them with scenario probabilities
     c_ForAllScen = [p[s] * c[i][j] for i in I for j in J for s in S]
 
@@ -49,18 +61,15 @@ def ExtensiveForm(f, c, u, d, b, p, I, J, S):
 
     # First-stage variables: facility openining decisions
     x = m.addVars(I, vtype=GRB.BINARY, obj=f, name='x')
-
     # Second-stage vars: transportation and unmet demand decisions
     y = m.addVars(I, J, S, obj=c_ForAllScen, name='y')
 
     m.modelSense = GRB.MINIMIZE
 
     m.addConstr(sum(u[i][0] * x[i] for i in I) >= b)
-
     # Demand constraints
     m.addConstrs(
         (y.sum('*', j, s) >= d[s][j] for j in J for s in S), name='Demand');
-
     # Production constraints
     m.addConstrs(
         (y.sum(i, '*', s) <= u[i][0] * x[i] for i in I for s in S), name='Capacity');
@@ -72,21 +81,18 @@ def ExtensiveForm(f, c, u, d, b, p, I, J, S):
     elapsed_time = (toc - tic)
 
     OptimalValue_2SP = m.objVal
-    # print('\nEXPECTED COST : %g' % OptimalValue_2SP)
 
     xsol = [0 for i in I]
     for i in I:
         if x[i].x > 0.99:
             xsol[i] = 1
 
-    # print('SOLUTION:')
-    # print("xsol: " + str(xsol))
-    # print("Total computation time: {:.2f} seconds ".format(elapsed_time))
-
-    return np.round(elapsed_time, 4), np.round(OptimalValue_2SP, 2)
-
+    return np.round(elapsed_time, 4)
 
 def MC_ModifyAndSolveSP(s, SP, xsol, nsol, tol, CapacityConsts, DemandConsts, u, d, I, J):
+    """
+    Function for modifying the subproblem for MULTI CUT
+    """
     # Modify constraint rhs
     for i in I:
         CapacityConsts[i].rhs = u[i] * xsol[i]
@@ -102,11 +108,6 @@ def MC_ModifyAndSolveSP(s, SP, xsol, nsol, tol, CapacityConsts, DemandConsts, u,
 
     SPobj = SP.objVal
 
-    # print("Subproblem " + str(s))
-    # print('SPobj: %g' % SPobj)
-    # print("pi_sol: " + str(pi_sol))
-    # print("gamma_sol: " + str(gamma_sol))
-
     # Check whether a violated Benders cut is found
     CutFound = False
     if (nsol[s] < SPobj - tol):  # Found Benders cut is violated at the current master solution
@@ -116,6 +117,11 @@ def MC_ModifyAndSolveSP(s, SP, xsol, nsol, tol, CapacityConsts, DemandConsts, u,
 
 
 def MultiCut(f, c, u, d, b, p, tol, I, J, S):
+    """
+    Solve the model via MULTI CUT
+    Currently returns elapsed time, but can tweak to return the
+    an array of the bounds for each iteration
+    """
     ##### Build the master problem #####
     MP = Model("MP")
     MP.Params.outputFlag = 0  # turn off output
@@ -197,17 +203,12 @@ def MultiCut(f, c, u, d, b, p, tol, I, J, S):
     toc = time.perf_counter()
     elapsed_time = (toc - tic)
 
-    # print('\nOptimal Solution:')
-    # print('number of cuts: %d' % numCuts)
-    # print('MPobj: %g' % MPobj)
-    # print("xsol: " + str(xsol))
-    # print("nsol: " + str(nsol))
-    # print("NoIters: " + str(NoIters))
-    # print("Total computation time: {:.2f} seconds ".format(elapsed_time))
-
-    return np.round(elapsed_time, 4), np.round(MPobj, 2)
+    return np.round(elapsed_time, 4)
 
 def SC_ModifyAndSolveSP(s, SP, xsol, CapacityConsts, DemandConsts, u, d, I, J):
+    """
+    Function for modifying the subproblem for SINGLE CUT
+    """
     # Modify constraint rhs
     for i in I:
         CapacityConsts[i].rhs = u[i] * xsol[i]
@@ -223,15 +224,15 @@ def SC_ModifyAndSolveSP(s, SP, xsol, CapacityConsts, DemandConsts, u, d, I, J):
 
     SPobj = SP.objVal
 
-    # print("Subproblem " + str(s))
-    # print('SPobj: %g' % SPobj)
-    # print("pi_sol: " + str(pi_sol))
-    # print("gamma_sol: " + str(gamma_sol))
-
     return SPobj, pi_sol, gamma_sol
 
 
 def SingleCut(f, c, u, d, b, p, tol, I, J, S):
+    """
+    Solve the model via SINGLE CUT
+    Currently returns elapsed time, but can tweak to return the
+    an array of the bounds for each iteration
+    """
     ##### Build the master problem #####
     MP = Model("MP")
     MP.Params.outputFlag = 0  # turn off output
@@ -317,12 +318,4 @@ def SingleCut(f, c, u, d, b, p, tol, I, J, S):
     toc = time.perf_counter()
     elapsed_time = (toc - tic)
 
-    # print('\nOptimal Solution:')
-    # print('number of cuts: %d' % numCuts)
-    # print('MPobj: %g' % MPobj)
-    # print("xsol: " + str(xsol))
-    # print("nsol: " + str(nsol))
-    # print("NoIters: " + str(NoIters))
-    # print("Total computation time: {:.2f} seconds ".format(elapsed_time))
-
-    return np.round(elapsed_time, 4), np.round(MPobj, 2)
+    return np.round(elapsed_time, 4)
