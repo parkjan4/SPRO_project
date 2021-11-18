@@ -6,7 +6,10 @@ import json
 import re
 import csv
 import time
-
+from sklearn.cluster import DBSCAN
+import itertools
+from collections import Counter
+np.random.seed(33)
 
 def importData(fname, I, J, S):
     """
@@ -203,7 +206,7 @@ def MultiCut(f, c, u, d, b, p, tol, I, J, S):
     toc = time.perf_counter()
     elapsed_time = (toc - tic)
 
-    return np.round(elapsed_time, 4)
+    return np.round(elapsed_time, 4), BestUB
 
 def SC_ModifyAndSolveSP(s, SP, xsol, CapacityConsts, DemandConsts, u, d, I, J):
     """
@@ -318,4 +321,144 @@ def SingleCut(f, c, u, d, b, p, tol, I, J, S):
     toc = time.perf_counter()
     elapsed_time = (toc - tic)
 
-    return np.round(elapsed_time, 4)
+    return np.round(elapsed_time, 4), BestUB
+
+def SelectSubproblems(nS,clusters,labels,option):
+    """
+    Applies heuristic to select which subproblem(s) to solve from each cluster
+    
+    Inputs:
+        nS: Number of scenarios/subproblems
+        clusters: Cluster label for each subproblem
+        labels: Set of unique cluster labels
+        option: Heuristic strategy (string)
+    Returns:
+        A binary array of dimensions (nS,1)
+    """
+    if option=="random":
+        # Pure random selection
+        include = np.zeros(nS)
+        include[clusters==1] = 1 # Solve all subproblems with label 1 (outliers)
+        for label in labels:
+            if label==1: continue
+            members = np.where(clusters==label)[0]
+            num_members = len(members)
+            if num_members > 0: # If not empty
+                num_sub = round(np.sqrt(num_members))
+                idx = np.random.choice(members,num_sub)
+                include[idx] = 1
+    
+    return include
+
+def ClusterCut(f, c, u, d, b, p, tol, I, J, S, hyperparams):
+    """
+    Corresponds to approach option 4.
+    Cluster subproblems and use a heuristic to choose one subproblem to solve.
+    
+    Inputs:
+        hyperparams: Hyperparameters of the clustering algorithm.
+    """
+    
+    ##### Build the master problem #####
+    MP = Model("MP")
+    MP.Params.outputFlag = 0  # turn off output
+    MP.Params.method = 1  # dual simplex
+
+    # First-stage variables: facility openining decisions
+    x = MP.addVars(I, vtype=GRB.BINARY, obj=f, name='x')
+    n = MP.addVars(S, obj=p, name='n')
+    # Constraint for relatively complete recourse
+    MP.addConstr(sum(u[i][0] * x[i] for i in I) >= b)
+
+    MP.modelSense = GRB.MINIMIZE
+
+    ##### Build the subproblem(s) #####
+    # Build Primal SP
+    SP = Model("SP")
+    y = SP.addVars(I, J, obj=c, name='y')
+
+    DemandConsts = []
+    CapacityConsts = []
+    # Demand constraints
+    for j in J:
+        DemandConsts.append(SP.addConstr((y.sum('*', j) >= 0), "Demand" + str(j)))
+    # Production constraints
+    for i in I:
+        CapacityConsts.append(SP.addConstr((y.sum(i, '*') <= 0), "Capacity" + str(i)))
+
+    SP.modelSense = GRB.MINIMIZE
+    SP.Params.outputFlag = 0
+   
+    ##### Cluster demand vectors #####
+    tic = time.perf_counter()  # start timer
+    nS = len(S)
+    
+    # Normalize demand vectors
+    min_v = d.min(axis=0)
+    max_v = d.max(axis=0)
+    d_norm = (d - min_v) / (max_v - min_v)
+    
+    # Cluster
+    clusters = DBSCAN(eps=hyperparams[0], min_samples=hyperparams[1], n_jobs=-1).fit_predict(d_norm)
+    clusters += 2 # Adding 2 makes cluster labels all >= 1
+    labels = set(clusters)
+    
+    ##### Benders Loop #####
+    CutFound = True
+    NoIters = 0
+    BestUB = GRB.INFINITY
+    numCuts = 0
+    while (CutFound):
+        NoIters += 1
+        CutFound = False
+
+        # Solve MP
+        MP.update()
+        MP.optimize()
+
+        # Get MP solution
+        MPobj = MP.objVal
+        # print('MPobj: %g' % MPobj)
+
+        xsol = [0 for i in I]
+        for i in I:
+            if x[i].x > 0.99:
+                xsol[i] = 1
+
+        nsol = [n[s].x for s in S]
+        # print("xsol: " + str(xsol))
+        # print("nsol: " + str(nsol))
+
+        UB = np.dot(f, xsol)
+        
+        CutFounds = []
+        exprs = []
+        for s in S:
+            Qvalue, CutFound_s, pi_sol, gamma_sol = MC_ModifyAndSolveSP(s, SP, xsol, nsol, tol, CapacityConsts,
+                                                                        DemandConsts, u, d, I, J)
+
+            UB += p[s] * Qvalue
+            
+            CutFounds.append(CutFound_s)
+            exprs.append(LinExpr(n[s] - quicksum(d[s][j] * pi_sol[j] for j in J) - quicksum(
+                    u[i][0] * gamma_sol[i] * x[i] for i in I)))
+        
+        # Select subproblem(s) from each cluster
+        # If CutFound_s = 0, the cluster "label" is forced to 0, and we will not use these subproblems
+        clusters *= np.array(CutFounds) 
+        include = SelectSubproblems(nS,clusters,labels,"random")
+        for s in np.where(include==1)[0]:
+            # Add cuts
+            MP.addConstr(exprs[s] >= 0)
+            numCuts += 1
+            CutFound = True
+        
+        if (UB < BestUB):
+            BestUB = UB
+        # print("UB: " + str(UB) + "\n")
+        # print("BestUB: " + str(BestUB) + "\n")        
+
+    toc = time.perf_counter()
+    elapsed_time = (toc - tic)
+
+    return np.round(elapsed_time, 4), BestUB
