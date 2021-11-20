@@ -10,8 +10,8 @@ from Functions import *
 f, c, u, d, b = importData('Data/cap101.dat', I=25, J=50, S=5000)
 
 # Now specify the reduced size that we care about
-I = 5
-J = 10
+I = 10
+J = 15
 S = 1000
 f, c, u, d = reduceProblemSize(f, c, u, d, I, J, S)
 
@@ -31,11 +31,11 @@ S = range(nS)
 # elapsed_time = ExtensiveForm(f, c, u, d, b, p, I, J, S)
 # print('ExtForm: The elapsed time is {} seconds'.format(elapsed_time))
 
-elapsed_time, Obj = MultiCut(f, c, u, d, b, p, tol, I, J, S)
-print('MultiCut: Obj = {}, Elapsed time = {} seconds'.format(np.round(Obj,4), elapsed_time))
+# elapsed_time, Obj, NoIters = MultiCut(f, c, u, d, b, p, tol, I, J, S)
+# print('MultiCut: Obj = {}, Elapsed time = {} seconds, NoIters = {}'.format(np.round(Obj,4), elapsed_time, NoIters))
 
-# elapsed_time = SingleCut(f, c, u, d, b, p, tol, I, J, S)
-# print('SingleCut: The elapsed time is {} seconds'.format(elapsed_time))
+elapsed_time, Obj, NoIters = SingleCut(f, c, u, d, b, p, tol, I, J, S)
+print('SingleCut: Obj = {}, Elapsed time = {} seconds, NoIters = {}'.format(np.round(Obj,4), elapsed_time, NoIters))
 
 #%% 
 
@@ -44,21 +44,21 @@ from sklearn.cluster import DBSCAN
 import itertools
 from collections import Counter
 
-eps = np.linspace(0.1, 0.5, num=5) # Equally spaced points
-min_points = np.linspace(1,5,num=5)
+# eps = np.linspace(0.01,0.5,num=10) # Equally spaced points
+eps = np.linspace(0.03,0.03,num=1)
+min_points = np.linspace(3,3,num=1)
 for hyperparams in itertools.product(eps, min_points):
-    min_v = d.min(axis=0)
-    max_v = d.max(axis=0)
-    d_norm = (d - min_v) / (max_v - min_v)
-    clusters = DBSCAN(eps=hyperparams[0], min_samples=hyperparams[1], n_jobs=-1).fit_predict(d_norm)
-    if (abs(hyperparams[0]-0.3)<0.0001):
-        print('-----')
-    # elapsed_time, Obj = ClusterCut(f, c, u, d, b, p, tol, I, J, S, hyperparams)
-    # print("Epsilon: {}, Min_samples: {}, Obj: {}, Elapsed time: {}".format(hyperparams[0], hyperparams[1], np.round(Obj,4), elapsed_time))
-    # clusters = DBSCAN(eps=hyperparams[0], min_samples=hyperparams[1], n_jobs=-1).fit_predict(d)
-    # print('Time elapsed (s): ', end-start)
-    # print('Epsilon: {}, Min_samples: {}'.format(pair[0], pair[1]))
-    # print('Total number of subproblems to solve: ', len(set(clusters)) + sum(clusters==-1) - 1)
-    # print(Counter(clusters))
-    
-    
+    # min_v = d.min(axis=0)
+    # max_v = d.max(axis=0)
+    # d_norm = (d - min_v) / (max_v - min_v)
+    # clusters = DBSCAN(eps=hyperparams[0], min_samples=hyperparams[1], n_jobs=-1).fit_predict(d_norm)
+    # tmp = Counter(clusters)
+    # if tmp[-1]:
+    #     nc = len(list(tmp.keys())) + tmp[-1] - 1
+    # else:
+    #     nc = len(list(tmp.keys()))
+    # print("Hyperparameters: {}, Num. Clusters: {}".format((np.round(hyperparams[0],4),hyperparams[1]),nc))
+    # elapsed_time, Obj = ClusterSub_v2(f, c, u, d, b, p, tol, I, J, S, hyperparams)
+    # print("Epsilon: {}, Min_samples: {}, Obj: {}, Elapsed time: {}".format(hyperparams[0], hyperparams[1], np.round(Obj,4), elapsed_time))   
+    elapsed_time, Obj, NoIters, AvgCS = ClusterCuts(f, c, u, d, b, p, tol, I, J, S, hyperparams[0], hyperparams[1])
+    print("Epsilon: {:.4f}, Min_samples: {:.0f}, Obj: {:.2f}, Elapsed time: {:.2f}, NoIters: {}, Avg. cluster: {:.0f}".format(hyperparams[0], hyperparams[1], np.round(Obj,4), elapsed_time, NoIters, AvgCS))   
