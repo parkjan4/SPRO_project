@@ -683,7 +683,7 @@ def ClusterCuts(f, c, u, d, b, p, tol, I, J, S, eps, min_samples):
 
         UB = np.dot(f, xsol)
         
-        Cut_info = np.zeros((nS,1)) # To store dual solutions and objective value
+        Cut_info = np.zeros((nS,nI+nJ+1)) # To store dual solutions and objective value
         Cuts = np.array([[None,None]]*nS) # To store actual cuts and CutFound_s
         for s in S:
             tmp_list = []
@@ -693,8 +693,8 @@ def ClusterCuts(f, c, u, d, b, p, tol, I, J, S, eps, min_samples):
             UB += p[s] * Qvalue
             
             # Collect cut info
-            # tmp_list.extend(pi_sol)
-            # tmp_list.extend(gamma_sol)
+            tmp_list.extend(pi_sol)
+            tmp_list.extend(gamma_sol)
             tmp_list.append(Qvalue)
             Cut_info[s,:] = tmp_list
                         

@@ -10,8 +10,8 @@ from Functions import *
 f, c, u, d, b = importData('Data/cap101.dat', I=25, J=50, S=5000)
 
 # Now specify the reduced size that we care about
-I = 10
-J = 15
+I = 5
+J = 10
 S = 1000
 f, c, u, d = reduceProblemSize(f, c, u, d, I, J, S)
 
