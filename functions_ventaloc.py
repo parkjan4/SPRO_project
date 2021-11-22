@@ -7,7 +7,10 @@ import re
 import csv
 import time
 from sklearn.cluster import DBSCAN
-from Data import data_ventaloc as Data
+from Data import data_ventaloc_500 as Data500
+from Data import data_ventaloc_1000 as Data1000
+from Data import data_ventaloc_1500 as Data1500
+from Data import data_ventaloc_2500 as Data2500
 import itertools
 from collections import Counter
 
@@ -17,16 +20,30 @@ np.seterr(divide='ignore', invalid='ignore')
 
 # %%
 
-def importData():
+def importData(numScen=1000):
+
+    if numScen == 500:
+        Data = Data500
+    elif numScen == 1000:
+        Data = Data1000
+    elif numScen == 1500:
+        Data = Data1500
+    elif numScen == 2500:
+        Data = Data2500
+
     scenarios = Data.scenarios  # set of scenarios
     theta = Data.theta  # unit cost of delivering alcohol to city n in the first stage
     theta_s = Data.theta_prime  # unit cost of transporting alcohol between city n and CA in the second stage
 
     theta_array = np.array([theta['C0'], theta['C1'], theta['C2'], theta['C3'], theta['C4'],
-                            theta['C5'], theta['C6'], theta['C7'], theta['C8'], theta['C9']])
+                            theta['C5'], theta['C6'], theta['C7'], theta['C8'], theta['C9'],
+                            theta['C10'], theta['C11'], theta['C12'], theta['C13'], theta['C14'],
+                            theta['C15'], theta['C16'], theta['C17'], theta['C18'], theta['C19']])
 
     theta_s_array = np.array([theta_s['C0'], theta_s['C1'], theta_s['C2'], theta_s['C3'], theta_s['C4'],
-                              theta_s['C5'], theta_s['C6'], theta_s['C7'], theta_s['C8'], theta_s['C9']])
+                              theta_s['C5'], theta_s['C6'], theta_s['C7'], theta_s['C8'], theta_s['C9'],
+                              theta_s['C10'], theta_s['C11'], theta_s['C12'], theta_s['C13'], theta_s['C14'],
+                              theta_s['C15'], theta_s['C16'], theta_s['C17'], theta_s['C18'], theta_s['C19']])
 
     h = Data.h  # unit cost of unused alcohol in the inventory
     g = Data.g  # unit cost of shortage of alchohol
@@ -36,7 +53,10 @@ def importData():
     prob = 1.0 / len(scenarios)  # probability of scenario k
 
     Yn_array = np.array([Yn['C0'], Yn['C1'], Yn['C2'], Yn['C3'], Yn['C4'],
-                         Yn['C5'], Yn['C6'], Yn['C7'], Yn['C8'], Yn['C9']])
+                         Yn['C5'], Yn['C6'], Yn['C7'], Yn['C8'], Yn['C9'],
+                         Yn['C10'], Yn['C11'], Yn['C12'], Yn['C13'], Yn['C14'],
+                         Yn['C15'], Yn['C16'], Yn['C17'], Yn['C18'], Yn['C19']
+                         ])
 
     return theta_array, theta_s_array, h, g, I, demand, prob, Yn_array
 
@@ -156,7 +176,7 @@ def MultiCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K, 
     NoIters = 0
     BestUB = GRB.INFINITY
     numCuts = 0
-    while (CutFound and NoIters < 20):
+    while (CutFound and NoIters < 200):
         NoIters += 1
         CutFound = False
 
@@ -272,7 +292,7 @@ def SingleCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K,
     NoIters = 0
     BestUB = GRB.INFINITY
     numCuts = 0
-    while (CutFound and NoIters < 200):
+    while (CutFound and NoIters < 500):
         NoIters += 1
         CutFound = False
         numCuts += 1

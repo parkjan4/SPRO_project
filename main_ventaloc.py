@@ -6,7 +6,7 @@ from functions_ventaloc import *
 #%%
 
 # Import the data
-theta_array, theta_s_array, h, g, I, demand, prob, Yn_array = importData()
+theta_array, theta_s_array, h, g, I, demand, prob, Yn_array = importData(500)
 tol = 0.0001
 
 # Build sets
