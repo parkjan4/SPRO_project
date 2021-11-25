@@ -60,5 +60,5 @@ for hyperparams in itertools.product(eps, min_points):
     # print("Hyperparameters: {}, Num. Clusters: {}".format((np.round(hyperparams[0],4),hyperparams[1]),nc))
     # elapsed_time, Obj = ClusterSub_v2(f, c, u, d, b, p, tol, I, J, S, hyperparams)
     # print("Epsilon: {}, Min_samples: {}, Obj: {}, Elapsed time: {}".format(hyperparams[0], hyperparams[1], np.round(Obj,4), elapsed_time))   
-    elapsed_time, Obj, NoIters, AvgCS = ClusterCuts(f, c, u, d, b, p, tol, I, J, S, hyperparams[0], hyperparams[1])
+    elapsed_time, Obj, NoIters, AvgCS = ClusterCut(f, c, u, d, b, p, tol, I, J, S, hyperparams[0], hyperparams[1])
     print("Epsilon: {:.4f}, Min_samples: {:.0f}, Obj: {:.2f}, Elapsed time: {:.2f}, NoIters: {}, Avg. cluster: {:.0f}".format(hyperparams[0], hyperparams[1], np.round(Obj,4), elapsed_time, NoIters, AvgCS))   

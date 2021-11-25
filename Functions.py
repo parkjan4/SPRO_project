@@ -600,7 +600,7 @@ def ClusterSub_v2(f, c, u, d, b, p, tol, I, J, S, hyperparams):
     return np.round(elapsed_time, 4), BestUB
 
 
-def ClusterCuts(f, c, u, d, b, p, tol, I, J, S, eps, min_samples):
+def ClusterCut(f, c, u, d, b, p, tol, I, J, S, eps, min_samples):
     
     """
     Clusters cuts, in each iteration, based on the subproblems' optimal 

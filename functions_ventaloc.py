@@ -1,6 +1,8 @@
 from gurobipy import *
 import numpy as np
 import pandas as pd
+import math
+import sys
 from pathlib import Path
 import json
 import re
@@ -14,7 +16,6 @@ from Data import data_ventaloc_2500 as Data2500
 import itertools
 from collections import Counter
 
-np.random.seed(33)
 np.seterr(divide='ignore', invalid='ignore')
 
 
@@ -58,6 +59,65 @@ def importData(numScen=1000):
                          Yn['C15'], Yn['C16'], Yn['C17'], Yn['C18'], Yn['C19']
                          ])
 
+    return theta_array, theta_s_array, h, g, I, demand, prob, Yn_array
+
+
+def generateData_ventaloc(nC,nS,seed):
+    np.random.seed(seed)
+    numCity = nC
+    numSce = nS
+    prob = 1.0/numSce
+    rangeCity = range(numCity)
+    rangeSce = range(numSce)
+    cities = []
+    scenarios = []
+    iter = 0
+    for n in rangeCity:
+        cities.append('C' + str(iter))
+        iter +=1
+    iter = 0
+    for s in rangeSce:
+        scenarios.append('S' + str(iter))
+        iter += 1
+    
+    sr = np.random.uniform(10,30,numCity)
+    
+    theta = {}
+    for i in rangeCity:
+        theta[cities[i]] = sr[i]
+    
+    # sr_second = np.random.uniform(40,60,numCity)
+    
+    theta_s = {}
+    for i in rangeCity:
+        theta_s[cities[i]] = 1.5*sr[i]
+    
+    h = 1000
+    g = 2000
+    
+    I = 500
+    nI = np.random.uniform(70,90,numCity)
+    Yn = {}
+    for i in rangeCity:
+        Yn[cities[i]] = nI[i]
+    
+    demand = {}
+    for n in cities:
+        for s in scenarios:
+            dem = np.random.uniform(100,150,1)
+            demand[n,s] = dem[0]
+    
+    theta_array = []
+    theta_s_array = []
+    Yn_array = []
+    for c in cities:
+        theta_array.append(theta[c])
+        theta_s_array.append(theta_s[c])
+        Yn_array.append(Yn[c])
+    theta_array = np.array(theta_array)
+    theta_s_array = np.array(theta_s_array)
+    Yn_array = np.array(Yn_array)
+    
     return theta_array, theta_s_array, h, g, I, demand, prob, Yn_array
 
 def ExtensiveForm(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K):
@@ -176,7 +236,7 @@ def MultiCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K, 
     NoIters = 0
     BestUB = GRB.INFINITY
     numCuts = 0
-    while (CutFound and NoIters < 200):
+    while (CutFound):
         NoIters += 1
         CutFound = False
 
@@ -292,7 +352,7 @@ def SingleCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K,
     NoIters = 0
     BestUB = GRB.INFINITY
     numCuts = 0
-    while (CutFound and NoIters < 500):
+    while (CutFound):
         NoIters += 1
         CutFound = False
         numCuts += 1
@@ -344,3 +404,291 @@ def SingleCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K,
     elapsed_time = (toc - tic)
 
     return np.round(elapsed_time, 4), BestUB, NoIters
+
+
+def ClusterSub(theta_array, theta_s_array, h, g, I, demand, d, prob, Yn_array, N, K, tol, eps, min_samples):
+    ##### Build the master problem #####
+    MP = Model("MP")
+    MP.Params.outputFlag = 0  # turn off output
+    MP.Params.method = 1  # dual simplex
+    MP.params.logtoconsole = 0
+
+    # First-stage variables: facility openining decisions
+    x = MP.addVars(N, vtype=GRB.CONTINUOUS, obj=theta_array, name='x')
+    eta = MP.addVars(K, vtype=GRB.CONTINUOUS, obj=prob, name='n')
+    # Note: Default variable bounds are LB = 0 and UB = infinity
+
+    # Add constraint for sum x_n <= I
+    MP.addConstr(sum(x[n] for n in N) <= I)
+    MP.modelSense = GRB.MINIMIZE
+
+    ##### Build the subproblem(k) #####
+    # Build Primal SP
+    SP = Model("SP")
+    mu_nc = SP.addVars(N, vtype=GRB.CONTINUOUS, obj=theta_s_array, name='mu_nc')
+    mu_cn = SP.addVars(N, vtype=GRB.CONTINUOUS, obj=theta_s_array, name='mu_cn')
+    z = SP.addVars(N, vtype=GRB.CONTINUOUS, obj=h, name='z')
+    s = SP.addVars(N, vtype=GRB.CONTINUOUS, obj=g, name='s')
+
+    CapacityConsts = []
+    # Capacity constraints
+    CapacityConsts.append(SP.addConstr((mu_nc.sum('*') - mu_cn.sum('*') >= 0), "Capacity"))
+
+    DemandConsts = []
+    # Demand constraints
+    for n in N:
+        DemandConsts.append(SP.addConstr((mu_cn[n] + s[n] - z[n] - mu_nc[n] == 0), "Demand_" + str(n)))
+
+    SP.modelSense = GRB.MINIMIZE
+    SP.Params.outputFlag = 0
+    SP.params.logtoconsole = 0
+
+    tic = time.perf_counter()  # start timer
+    
+    # Normalize demand vectors
+    min_v = d.min(axis=0)
+    max_v = d.max(axis=0)
+    d_norm = (d - min_v) / (max_v - min_v)
+    
+    # Cluster
+    clusters = DBSCAN(eps=eps, min_samples=min_samples, n_jobs=-1).fit_predict(d_norm)
+    labels = set(clusters)
+    tmp = Counter(clusters)
+    if tmp[-1]:
+        ClusterSize = len(list(tmp.keys())) + tmp[-1] - 1
+    else:
+        ClusterSize = len(list(tmp.keys()))
+    # print(ClusterSize)
+    
+    ##### Benders Loop #####
+
+    CutFound = True
+    NoIters = 0
+    BestUB = GRB.INFINITY
+    numCuts = 0
+    while (CutFound):
+        NoIters += 1
+        CutFound = False
+
+        # print('Iteration {}'.format(NoIters))
+
+        # Solve MP
+        MP.update()
+        MP.optimize()
+
+        # Get MP solution
+        MPobj = MP.objVal
+        # print('BestLB: {}'.format(np.round(MPobj, 2)))
+
+        xsol = [0 for n in N]
+        for n in N:
+            if x[n].x > 0.00001:
+                xsol[n] = x[n].x
+
+        nsol = [eta[k].x for k in K]
+        # print("xsol: " + str(xsol))
+        # print("nsol: " + str(nsol))
+
+        UB = np.dot(theta_array, xsol)
+        
+        Qvalue_clustered = dict.fromkeys(labels, 0) # Initialize with 0
+        nsol_clustered = dict.fromkeys(labels, 0)
+        Cuts = dict.fromkeys(labels, 0)
+        for k in K:
+            Qvalue, CutFound_k, gamma_sol, pi_sol = MC_ModifyAndSolveSP(k,  SP, xsol, nsol, tol, CapacityConsts,
+                                                                        DemandConsts, I, demand, Yn_array, N)
+
+            UB += prob * Qvalue
+            
+            scen_key = "S{}".format(k)
+            if (CutFound_k) and (clusters[k]==-1):
+                # Cuts from "outlier" subproblems are added individually
+                numCuts += 1
+                CutFound = True
+                expr = LinExpr(eta[k] - (sum(x[n] for n in N) - I) * gamma_sol[0] - sum(
+                    pi_sol[n] * (demand[("C{}".format(n), scen_key)] - x[n] - Yn_array[n]) for n in N))
+                MP.addConstr(expr >= 0)
+                continue
+            
+            # Collect Qvalues
+            Qvalue_clustered[clusters[k]] += Qvalue
+            nsol_clustered[clusters[k]] += eta[k].x
+            
+            # Collect cuts
+            Cuts[clusters[k]] += LinExpr(eta[k] - (sum(x[n] for n in N) - I) * gamma_sol[0] - sum(
+                    pi_sol[n] * (demand[("C{}".format(n), scen_key)] - x[n] - Yn_array[n]) for n in N))
+
+        for label in labels:
+            if (nsol_clustered[label] < Qvalue_clustered[label] - tol):
+                # Aggregate within each cluster and add the cut to MP
+                MP.addConstr(Cuts[label] >= 0)
+                numCuts += 1
+                CutFound = True
+                
+        if (UB < BestUB):
+            BestUB = UB
+        # print("UB: " + str(UB) + "\n")
+        # print("BestUB: " + str(np.round(BestUB, 2)[0]) + "\n")
+
+    toc = time.perf_counter()
+    elapsed_time = (toc - tic)
+    return np.round(elapsed_time, 4), BestUB, NoIters, ClusterSize
+
+
+def ClusterCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K, tol, eps, min_samples):
+    """
+    Clusters cuts, in each iteration, based on the subproblems' optimal 
+    objective values and dual solutions. Produces one aggregated cut per 
+    cluster.
+        
+    Inputs:
+        hyperparams: Hyperparameters of the clustering algorithm.
+    """ 
+    ##### Build the master problem #####
+    MP = Model("MP")
+    MP.Params.outputFlag = 0  # turn off output
+    MP.Params.method = 1  # dual simplex
+    MP.params.logtoconsole = 0
+
+    # First-stage variables: facility openining decisions
+    x = MP.addVars(N, vtype=GRB.CONTINUOUS, obj=theta_array, name='x')
+    eta = MP.addVars(K, vtype=GRB.CONTINUOUS, obj=prob, name='n')
+    # Note: Default variable bounds are LB = 0 and UB = infinity
+
+    # Add constraint for sum x_n <= I
+    MP.addConstr(sum(x[n] for n in N) <= I)
+    MP.modelSense = GRB.MINIMIZE
+
+    ##### Build the subproblem(k) #####
+    # Build Primal SP
+    SP = Model("SP")
+    mu_nc = SP.addVars(N, vtype=GRB.CONTINUOUS, obj=theta_s_array, name='mu_nc')
+    mu_cn = SP.addVars(N, vtype=GRB.CONTINUOUS, obj=theta_s_array, name='mu_cn')
+    z = SP.addVars(N, vtype=GRB.CONTINUOUS, obj=h, name='z')
+    s = SP.addVars(N, vtype=GRB.CONTINUOUS, obj=g, name='s')
+
+    CapacityConsts = []
+    # Capacity constraints
+    CapacityConsts.append(SP.addConstr((mu_nc.sum('*') - mu_cn.sum('*') >= 0), "Capacity"))
+
+    DemandConsts = []
+    # Demand constraints
+    for n in N:
+        DemandConsts.append(SP.addConstr((mu_cn[n] + s[n] - z[n] - mu_nc[n] == 0), "Demand_" + str(n)))
+
+    SP.modelSense = GRB.MINIMIZE
+    SP.Params.outputFlag = 0
+    SP.params.logtoconsole = 0
+
+    ##### Benders Loop #####
+
+    tic = time.perf_counter()  # start timer
+    
+    nK = len(K)
+    nN = len(N)
+
+    CutFound = True
+    NoIters = 0
+    BestUB = GRB.INFINITY
+    numCuts = 0
+    AvgClusterSize = 0
+    while (CutFound and NoIters < 200):
+        NoIters += 1
+        CutFound = False
+
+        # print('Iteration {}'.format(NoIters))
+
+        # Solve MP
+        MP.update()
+        MP.optimize()
+
+        # Get MP solution
+        MPobj = MP.objVal
+        # print('BestLB: {}'.format(np.round(MPobj, 2)))
+
+        xsol = [0 for n in N]
+        for n in N:
+            if x[n].x > 0.00001:
+                xsol[n] = x[n].x
+
+        nsol = np.array([eta[k].x for k in K])
+        # print("xsol: " + str(xsol))
+        # print("nsol: " + str(nsol))
+
+        UB = np.dot(theta_array, xsol)
+        
+        Cut_info = np.zeros((nK,nN+2)) # To store dual solutions and objective value
+        Cuts = np.array([[None,None]]*nK) # To store actual cuts and CutFound_s
+        for k in K:
+            tmp_list = []
+            Qvalue, CutFound_k, gamma_sol, pi_sol = MC_ModifyAndSolveSP(k,  SP, xsol, nsol, tol, CapacityConsts,
+                                                                        DemandConsts, I, demand, Yn_array, N)
+
+            UB += prob * Qvalue
+            
+            # Collect cut info
+            tmp_list.extend(pi_sol)
+            tmp_list.extend(gamma_sol)
+            tmp_list.append(Qvalue)
+            Cut_info[k,:] = tmp_list
+            
+            # Collect cuts
+            scen_key = "S{}".format(k)
+            Cuts[k][0] = LinExpr(eta[k] - (sum(x[n] for n in N) - I) * gamma_sol[0] - sum(
+                    pi_sol[n] * (demand[("C{}".format(n), scen_key)] - x[n] - Yn_array[n]) for n in N))
+            Cuts[k][1] = CutFound_k
+        
+        # Normalization and cluster        
+        min_v = Cut_info.min(axis=0)
+        max_v = Cut_info.max(axis=0)
+        Cut_info_norm = np.nan_to_num((Cut_info - min_v) / (max_v - min_v), nan=0, posinf=0, neginf=0)
+        # Drop components where there are no unique values
+        Cut_info_norm = Cut_info_norm[:,~np.all(Cut_info_norm == 0, axis=0)]
+        clusters = DBSCAN(eps=eps, min_samples=min_samples, n_jobs=-1).fit_predict(Cut_info_norm)
+        labels = set(clusters)
+        
+        # # Count number of subproblems that are the "same"
+        # frac_same = 0
+        # for i in range(nN + 1):
+        #     tmp = max(Counter(Cut_info[:,i]).values())/nK
+        #     frac_same += tmp
+        # frac_same = frac_same / (nN+1)
+        # print(frac_same)
+        
+        # Number of clusters created in each iteration
+        tmp = Counter(clusters)
+        if tmp[-1]:
+            nc = len(list(tmp.keys())) + tmp[-1] - 1
+        else:
+            nc = len(list(tmp.keys()))
+        AvgClusterSize = (AvgClusterSize*(NoIters-1) + nc) / NoIters
+        # print("Num. Clusters: {}".format(nc))
+        
+        # Add "outlier" cuts individually
+        outliers_exist = False
+        for cut in Cuts[clusters==-1,:]:
+            outliers_exist = True
+            if cut[1]: # CutFound_s
+                MP.addConstr(cut[0] >= 0)
+                numCuts += 1
+                CutFound = True
+        if outliers_exist:
+            labels.remove(-1)
+            
+        for label in labels:
+            idxs = clusters==label
+            nsol_clustered = sum(nsol[idxs])
+            Qvalue_clustered = sum(Cut_info[idxs,-1]) # Last column has Qvalues
+            if (nsol_clustered < Qvalue_clustered - tol):
+                # Aggregate within each cluster and add the cut to MP
+                MP.addConstr(sum(Cuts[idxs,0]) >= 0)
+                numCuts += 1
+                CutFound = True
+        
+        if (UB < BestUB):
+            BestUB = UB
+
+    toc = time.perf_counter()
+    elapsed_time = (toc - tic)
+    # return np.round(elapsed_time, 4), BestUB, NoIters, AvgClusterSize
+    return np.round(elapsed_time, 4), BestUB, NoIters, AvgClusterSize
