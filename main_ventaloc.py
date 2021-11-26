@@ -11,7 +11,7 @@ for seed in seeds:
     # theta_array, theta_s_array, h, g, I, demand, prob, Yn_array = importData(1500)
     # seed = 33
     numCities = 20
-    numScen = 5000
+    numScen = 500
     theta_array, theta_s_array, h, g, I, demand, prob, Yn_array = generateData_ventaloc(numCities, numScen, seed)
     tol = 0.0001
     

@@ -527,6 +527,11 @@ def ClusterSub_v2(f, c, u, d, b, p, tol, I, J, S, hyperparams):
     # Cluster
     clusters = DBSCAN(eps=hyperparams[0], min_samples=hyperparams[1], n_jobs=-1).fit_predict(d_norm)
     labels = set(clusters)
+    tmp = Counter(clusters)
+    if tmp[-1]:
+        ClusterSize = len(list(tmp.keys())) + tmp[-1] - 1
+    else:
+        ClusterSize = len(list(tmp.keys()))
     
     ##### Benders Loop #####
     CutFound = True
@@ -597,7 +602,7 @@ def ClusterSub_v2(f, c, u, d, b, p, tol, I, J, S, hyperparams):
     toc = time.perf_counter()
     elapsed_time = (toc - tic)
 
-    return np.round(elapsed_time, 4), BestUB
+    return np.round(elapsed_time, 4), BestUB, ClusterSize
 
 
 def ClusterCut(f, c, u, d, b, p, tol, I, J, S, eps, min_samples):
