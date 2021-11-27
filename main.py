@@ -44,9 +44,10 @@ from sklearn.cluster import DBSCAN
 import itertools
 from collections import Counter
 
-# eps = np.linspace(0.01,0.5,num=10) # Equally spaced points
-eps = np.linspace(0.7,0.7,num=1)
-min_points = np.linspace(1,1,num=1)
+eps = np.linspace(0.01,0.5,num=10) # Equally spaced points
+# eps = np.linspace(0.625,0.625,num=1)
+min_points = np.linspace(3,3,num=1)
+best_time = np.inf
 for hyperparams in itertools.product(eps, min_points):
     # min_v = d.min(axis=0)
     # max_v = d.max(axis=0)
@@ -58,8 +59,11 @@ for hyperparams in itertools.product(eps, min_points):
     # else:
     #     nc = len(list(tmp.keys()))
     # print("Hyperparameters: {}, Num. Clusters: {}".format((np.round(hyperparams[0],4),hyperparams[1]),nc))
-    elapsed_time, Obj, ClusterSize = ClusterSub_v2(f, c, u, d, b, p, tol, I, J, S, hyperparams)
-    print("Epsilon: {}, Min_samples: {}, Obj: {}, Elapsed time: {}, Num. clusters: {}".format(hyperparams[0], hyperparams[1], np.round(Obj,4), elapsed_time, ClusterSize))   
-    # elapsed_time, Obj, NoIters, AvgCS = ClusterCut(f, c, u, d, b, p, tol, I, J, S, hyperparams[0], hyperparams[1])
-    # print("Epsilon: {:.4f}, Min_samples: {:.0f}, Obj: {:.2f}, Elapsed time: {:.2f}, NoIters: {}, Avg. cluster: {:.0f}".format(hyperparams[0], hyperparams[1], np.round(Obj,4), elapsed_time, NoIters, AvgCS))   
-    
+    # elapsed_time, Obj, ClusterSize = ClusterSub_v2(f, c, u, d, b, p, tol, I, J, S, hyperparams)
+    # print("Epsilon: {}, Min_samples: {}, Obj: {}, Elapsed time: {}, Num. clusters: {}".format(hyperparams[0], hyperparams[1], np.round(Obj,4), elapsed_time, ClusterSize))   
+    elapsed_time, Obj, NoIters, AvgCS = ClusterCut(f, c, u, d, b, p, tol, I, J, S, hyperparams[0], hyperparams[1])
+    if elapsed_time < best_time:
+        best_time = elapsed_time
+        best_eps = hyperparams[0]
+    print("Epsilon: {:.4f}, Min_samples: {:.0f}, Obj: {:.2f}, Elapsed time: {:.2f}, NoIters: {}, Avg. cluster: {:.0f}".format(hyperparams[0], hyperparams[1], np.round(Obj,4), elapsed_time, NoIters, AvgCS))   
+print("Best eps = ", best_eps)

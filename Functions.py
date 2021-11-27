@@ -7,6 +7,7 @@ import re
 import csv
 import time
 from sklearn.cluster import DBSCAN
+from sklearn.metrics.pairwise import cosine_similarity as csim
 import itertools
 from collections import Counter
 np.random.seed(33)
@@ -708,10 +709,19 @@ def ClusterCut(f, c, u, d, b, p, tol, I, J, S, eps, min_samples):
                     u[i][0] * gamma_sol[i] * x[i] for i in I))
             Cuts[s][1] = CutFound_s
         
+        
+        # # Compute cosine similarity among dual solutions
+        # sim = csim(Cut_info[:,:-1])
+        # prc_same99 = (sim>=0.99).sum() / (sim.shape[0] * sim.shape[1])
+        # prc_same90 = (sim>=0.9).sum() / (sim.shape[0] * sim.shape[1])
+        # print(prc_same99, prc_same90)
+        
         # Normalization and cluster        
         min_v = Cut_info.min(axis=0)
         max_v = Cut_info.max(axis=0)
         Cut_info_norm = np.nan_to_num((Cut_info - min_v) / (max_v - min_v), nan=0, posinf=0, neginf=0)
+        # Drop components where there are no unique values
+        Cut_info_norm = Cut_info_norm[:,~np.all(Cut_info_norm == 0, axis=0)]
         clusters = DBSCAN(eps=eps, min_samples=min_samples, n_jobs=-1).fit_predict(Cut_info_norm)
         labels = set(clusters)
         
