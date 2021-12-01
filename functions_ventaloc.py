@@ -453,11 +453,11 @@ def ClusterSub(theta_array, theta_s_array, h, g, I, demand, d, prob, Yn_array, N
     # Cluster
     clusters = DBSCAN(eps=eps, min_samples=min_samples, n_jobs=-1).fit_predict(d_norm)
     labels = set(clusters)
-    tmp = Counter(clusters)
-    if tmp[-1]:
-        ClusterSize = len(list(tmp.keys())) + tmp[-1] - 1
-    else:
-        ClusterSize = len(list(tmp.keys()))
+    # tmp = Counter(clusters)
+    # if tmp[-1]:
+    #     ClusterSize = len(list(tmp.keys())) + tmp[-1] - 1
+    # else:
+    #     ClusterSize = len(list(tmp.keys()))
     # print(ClusterSize)
     
     ##### Benders Loop #####
@@ -532,7 +532,7 @@ def ClusterSub(theta_array, theta_s_array, h, g, I, demand, d, prob, Yn_array, N
 
     toc = time.perf_counter()
     elapsed_time = (toc - tic)
-    return np.round(elapsed_time, 4), BestUB, NoIters, ClusterSize
+    return np.round(elapsed_time, 4), BestUB, NoIters, numCuts
 
 
 def ClusterCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K, tol, eps, min_samples):
@@ -655,13 +655,13 @@ def ClusterCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K
         # frac_same = frac_same / (nN+1)
         # print(frac_same)
         
-        # Number of clusters created in each iteration
-        tmp = Counter(clusters)
-        if tmp[-1]:
-            nc = len(list(tmp.keys())) + tmp[-1] - 1
-        else:
-            nc = len(list(tmp.keys()))
-        AvgClusterSize = (AvgClusterSize*(NoIters-1) + nc) / NoIters
+        # # Number of clusters created in each iteration
+        # tmp = Counter(clusters)
+        # if tmp[-1]:
+        #     nc = len(list(tmp.keys())) + tmp[-1] - 1
+        # else:
+        #     nc = len(list(tmp.keys()))
+        # AvgClusterSize = (AvgClusterSize*(NoIters-1) + nc) / NoIters
         # print("Num. Clusters: {}".format(nc))
         
         # Add "outlier" cuts individually
@@ -691,4 +691,4 @@ def ClusterCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K
     toc = time.perf_counter()
     elapsed_time = (toc - tic)
     # return np.round(elapsed_time, 4), BestUB, NoIters, AvgClusterSize
-    return np.round(elapsed_time, 4), BestUB, NoIters, AvgClusterSize
+    return np.round(elapsed_time, 4), BestUB, NoIters, numCuts

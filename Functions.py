@@ -528,11 +528,11 @@ def ClusterSub_v2(f, c, u, d, b, p, tol, I, J, S, hyperparams):
     # Cluster
     clusters = DBSCAN(eps=hyperparams[0], min_samples=hyperparams[1], n_jobs=-1).fit_predict(d_norm)
     labels = set(clusters)
-    tmp = Counter(clusters)
-    if tmp[-1]:
-        ClusterSize = len(list(tmp.keys())) + tmp[-1] - 1
-    else:
-        ClusterSize = len(list(tmp.keys()))
+    # tmp = Counter(clusters)
+    # if tmp[-1]:
+    #     ClusterSize = len(list(tmp.keys())) + tmp[-1] - 1
+    # else:
+    #     ClusterSize = len(list(tmp.keys()))
     
     ##### Benders Loop #####
     CutFound = True
@@ -733,14 +733,14 @@ def ClusterCut(f, c, u, d, b, p, tol, I, J, S, eps, min_samples):
         # frac_same = frac_same / (nI+nJ)
         # print(frac_same)
         
-        # Number of clusters created in each iteration
-        tmp = Counter(clusters)
-        if tmp[-1]:
-            nc = len(list(tmp.keys())) + tmp[-1] - 1
-        else:
-            nc = len(list(tmp.keys()))
-        AvgClusterSize = (AvgClusterSize*(NoIters-1) + nc) / NoIters
-        # print("Num. Clusters: {}".format(nc))
+        # # Number of clusters created in each iteration
+        # tmp = Counter(clusters)
+        # if tmp[-1]:
+        #     nc = len(list(tmp.keys())) + tmp[-1] - 1
+        # else:
+        #     nc = len(list(tmp.keys()))
+        # AvgClusterSize = (AvgClusterSize*(NoIters-1) + nc) / NoIters
+        # # print("Num. Clusters: {}".format(nc))
         
         # Add "outlier" cuts individually
         outliers_exist = False
