@@ -212,7 +212,7 @@ def MultiCut(f, c, u, d, b, p, tol, I, J, S):
     toc = time.perf_counter()
     elapsed_time = (toc - tic)
 
-    return np.round(elapsed_time, 4), BestUB, NoIters
+    return np.round(elapsed_time, 4), BestUB, MPobj,  NoIters, numCuts
 
 
 def SC_ModifyAndSolveSP(s, SP, xsol, CapacityConsts, DemandConsts, u, d, I, J):
@@ -330,7 +330,7 @@ def SingleCut(f, c, u, d, b, p, tol, I, J, S):
     toc = time.perf_counter()
     elapsed_time = (toc - tic)
 
-    return np.round(elapsed_time, 4), BestUB, NoIters
+    return np.round(elapsed_time, 4), BestUB, MPobj,  NoIters, numCuts
 
 
 def SelectSubproblems(nS,clusters,labels,option):
@@ -603,7 +603,7 @@ def ClusterSub_v2(f, c, u, d, b, p, tol, I, J, S, hyperparams):
     toc = time.perf_counter()
     elapsed_time = (toc - tic)
 
-    return np.round(elapsed_time, 4), BestUB, ClusterSize
+    return np.round(elapsed_time, 4), BestUB, MPobj,  NoIters, numCuts
 
 
 def ClusterCut(f, c, u, d, b, p, tol, I, J, S, eps, min_samples):
@@ -769,4 +769,4 @@ def ClusterCut(f, c, u, d, b, p, tol, I, J, S, eps, min_samples):
     toc = time.perf_counter()
     elapsed_time = (toc - tic)
 
-    return np.round(elapsed_time, 4), BestUB, NoIters, AvgClusterSize
+    return np.round(elapsed_time, 4), BestUB, MPobj,  NoIters, numCuts
