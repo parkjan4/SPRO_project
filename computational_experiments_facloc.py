@@ -118,7 +118,7 @@ singlecut_times.to_pickle("Results/singlecut_times.pkl")
 clustersub_times.to_pickle("Results/clustersub_times.pkl")
 clustercut_times.to_pickle("Results/clustercut_times.pkl")
 
-multicut_cuts.to_pickle("Resultsmulticut_cuts.pkl")
+multicut_cuts.to_pickle("Results/multicut_cuts.pkl")
 singlecut_cuts.to_pickle("Results/singlecut_cuts.pkl")
 clustersub_cuts.to_pickle("Results/clustersub_cuts.pkl")
 clustercut_cuts.to_pickle("Results/clustercut_cuts.pkl")
