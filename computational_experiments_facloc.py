@@ -15,7 +15,7 @@ index = [50, 100, 150]
 # index = [6, 9, 12]
 
 scenarios = [100, 500, 1000, 1500, 2000, 2500]
-scenarios = [5, 100]
+# scenarios = [5, 100]
 
 multicut_times = pd.DataFrame(np.zeros((len(instances), len(scenarios))), index=index, columns=[scenarios])
 singlecut_times = pd.DataFrame(np.zeros((len(instances), len(scenarios))), index=index, columns=[scenarios])
