@@ -67,7 +67,7 @@ multicut_cuts.to_pickle("Results_ventaloc/multicut_cuts_ventaloc.pkl")
 clustercut_cuts.to_pickle("Results_ventaloc/clustercut_cuts_ventaloc.pkl")
 
 multicut_iters.to_pickle("Results_ventaloc/multicut_iters_ventaloc.pkl")
-clustercut_iters.to_pickle("Results/clustercut_iters_ventaloc.pkl")
+clustercut_iters.to_pickle("Results_ventaloc/clustercut_iters_ventaloc.pkl")
 
 multicut_optgap.to_pickle("Results_ventaloc/multicut_optgap_ventaloc.pkl")
 clustercut_optgap.to_pickle("Results_ventaloc/clustercut_optgap_ventaloc.pkl")
