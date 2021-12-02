@@ -9,8 +9,8 @@ from Functions import *
 files = ['cap102', 'cap103', 'cap104', ]
 
 ### instances = [numFac, numCust, eps, m]
-instances = [[5, 10, 0.03, 3], [10, 10, 0.03, 3], [10, 15, 0.03, 3]]
-instances = [[2, 3, 0.03, 3], [3, 3, 0.03, 3], [3, 4, 0.03, 3]]
+instances = [[5, 10], [10, 10], [10, 15]]
+instances = [[2, 3], [3, 3], [3, 4,]]
 
 index = [50, 100, 150]
 index = [6, 9, 12]
@@ -63,32 +63,48 @@ for file in files:
 
             # Solve each model
             elapsed_time, UB, LB, NoIters, numCuts = MultiCut(f, c, u, d, b, p, tol, I, J, S)
-            print('MultiCut: UB = {}, LB = {}, Elapsed time = {} seconds, NoIters = {}, NumCuts = {}'.format(np.round(UB, 4), np.round(LB, 4), elapsed_time, NoIters, numCuts))
 
+            print('MultiCut: UB = {}, LB = {}, Elapsed time = {} seconds, NoIters = {}, NumCuts = {}'.format(np.round(UB, 4), np.round(LB, 4), elapsed_time, NoIters, numCuts))
             multicut_times.loc[instance[0]*instance[1], scenario] += (1/3)*elapsed_time
             multicut_cuts.loc[instance[0] * instance[1], scenario] += (1/3)*numCuts
             multicut_iters.loc[instance[0] * instance[1], scenario] += (1 / 3) * NoIters
             multicut_optgap.loc[instance[0] * instance[1], scenario] += np.round((1 / 3) * (UB - LB) / UB, 3)
 
             elapsed_time, UB, LB, NoIters, numCuts = SingleCut(f, c, u, d, b, p, tol, I, J, S)
-            print('SingleCut: UB = {}, LB = {}, Elapsed time = {} seconds, NoIters = {}, NumCuts = {}'.format(np.round(UB, 4), np.round(LB, 4), elapsed_time, NoIters, numCuts))
 
+            print('SingleCut: UB = {}, LB = {}, Elapsed time = {} seconds, NoIters = {}, NumCuts = {}'.format(np.round(UB, 4), np.round(LB, 4), elapsed_time, NoIters, numCuts))
             singlecut_times.loc[instance[0] * instance[1], scenario] += (1 / 3) * elapsed_time
             singlecut_cuts.loc[instance[0] * instance[1], scenario] += (1 / 3) * numCuts
             singlecut_iters.loc[instance[0] * instance[1], scenario] += (1 / 3) * NoIters
             singlecut_optgap.loc[instance[0] * instance[1], scenario] += np.round((1 / 3) * (UB - LB) / UB, 3)
 
-            elapsed_time, UB, LB, NoIters, numCuts = ClusterSub_v2(f, c, u, d, b, p, tol, I, J, S, [instance[2], instance[3]])
-            print('ClusterSub_v2: UB = {}, LB = {}, Elapsed time = {} seconds, NoIters = {}, NumCuts = {}'.format(np.round(UB, 4), np.round(LB, 4), elapsed_time, NoIters, numCuts))
 
+            if instance[0]==5 and instance[1]==10:
+                eps = (0.5875 - 0.7)/(5000-1000) * (scenario - 1000) + 0.7
+            elif instance[0]==10 and instance[1]==10:
+                eps = (0.5875 - 0.7) / (5000 - 1000) * (scenario - 1000) + 0.7
+            else:
+                eps = (0.775 - 0.85) / (5000 - 1000) * (scenario - 1000) + 0.85
+
+            elapsed_time, UB, LB, NoIters, numCuts = ClusterSub_v2(f, c, u, d, b, p, tol, I, J, S, [eps, 3])
+
+            print('ClusterSub_v2: UB = {}, LB = {}, Elapsed time = {} seconds, NoIters = {}, NumCuts = {}'.format(np.round(UB, 4), np.round(LB, 4), elapsed_time, NoIters, numCuts))
             clustersub_times.loc[instance[0] * instance[1], scenario] += (1 / 3) * elapsed_time
             clustersub_cuts.loc[instance[0] * instance[1], scenario] += (1 / 3) * numCuts
             clustersub_iters.loc[instance[0] * instance[1], scenario] += (1 / 3) * NoIters
             clustersub_optgap.loc[instance[0] * instance[1], scenario] += np.round((1 / 3) * (UB - LB) / UB, 3)
 
-            elapsed_time, UB, LB, NoIters, numCuts = ClusterCut(f, c, u, d, b, p, tol, I, J, S, instance[2], instance[3])
-            print('ClusterCut: UB = {}, LB = {}, Elapsed time = {} seconds, NoIters = {}, NumCuts = {}\n'.format(np.round(UB, 4), np.round(LB, 4), elapsed_time, NoIters, numCuts))
 
+            if instance[0]==5 and instance[1]==10:
+                eps = (0.01 - 0.2278)/(5000-1000) * (scenario - 1000) + 0.2278
+            elif instance[0]==10 and instance[1]==10:
+                eps = (0.3911 - 0.1733) / (5000 - 1000) * (scenario - 1000) + 0.1733
+            else:
+                eps = (0.5 - 0.3911) / (5000 - 1000) * (scenario - 1000) + 0.3911
+
+            elapsed_time, UB, LB, NoIters, numCuts = ClusterCut(f, c, u, d, b, p, tol, I, J, S, eps, 3)
+
+            print('ClusterCut: UB = {}, LB = {}, Elapsed time = {} seconds, NoIters = {}, NumCuts = {}\n'.format(np.round(UB, 4), np.round(LB, 4), elapsed_time, NoIters, numCuts))
             clustercut_times.loc[instance[0] * instance[1], scenario] += (1 / 3) * elapsed_time
             clustercut_cuts.loc[instance[0] * instance[1], scenario] += (1 / 3) * numCuts
             clustercut_iters.loc[instance[0] * instance[1], scenario] += (1 / 3) * NoIters
