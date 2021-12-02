@@ -165,7 +165,7 @@ def MultiCut(f, c, u, d, b, p, tol, I, J, S):
     numCuts = 0
     tic = time.perf_counter()  # start timer
     # prev_MPobj=0
-    while (CutFound):
+    while (CutFound and (time.perf_counter() - tic) < 3600):
         NoIters += 1
         CutFound = False
 
@@ -280,7 +280,7 @@ def SingleCut(f, c, u, d, b, p, tol, I, J, S):
     numCuts = 0
     tic = time.perf_counter()  # start timer
     # prev_MPobj = 0
-    while(CutFound):
+    while (CutFound and (time.perf_counter() - tic) < 3600):
         NoIters += 1
         CutFound = False
         numCuts += 1
@@ -539,7 +539,7 @@ def ClusterSub_v2(f, c, u, d, b, p, tol, I, J, S, hyperparams):
     NoIters = 0
     BestUB = GRB.INFINITY
     numCuts = 0
-    while (CutFound):
+    while (CutFound and (time.perf_counter() - tic) < 3600):
         NoIters += 1
         CutFound = False
 
@@ -659,7 +659,7 @@ def ClusterCut(f, c, u, d, b, p, tol, I, J, S, eps, min_samples):
     numCuts = 0
     tic = time.perf_counter()  # start timer
     AvgClusterSize = 0
-    while (CutFound):
+    while (CutFound and (time.perf_counter() - tic) < 3600):
         NoIters += 1
         CutFound = False
         

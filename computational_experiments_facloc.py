@@ -6,17 +6,16 @@ from Functions import *
 
 # %%
 
-files = ['cap102', 'cap103', 'cap104', ]
+files = ['cap102', 'cap103', 'cap104',]
 
-### instances = [numFac, numCust, eps, m]
 instances = [[5, 10], [10, 10], [10, 15]]
-instances = [[2, 3], [3, 3], [3, 4,]]
+# instances = [[2, 3], [3, 3], [3, 4,]]
 
 index = [50, 100, 150]
-index = [6, 9, 12]
+# index = [6, 9, 12]
 
 scenarios = [100, 500, 1000, 1500, 2000, 2500]
-scenarios = [5, 10, 15, 20, 25, 30]
+scenarios = [5, 100]
 
 multicut_times = pd.DataFrame(np.zeros((len(instances), len(scenarios))), index=index, columns=[scenarios])
 singlecut_times = pd.DataFrame(np.zeros((len(instances), len(scenarios))), index=index, columns=[scenarios])
@@ -38,11 +37,14 @@ singlecut_optgap = pd.DataFrame(np.zeros((len(instances), len(scenarios))), inde
 clustersub_optgap = pd.DataFrame(np.zeros((len(instances), len(scenarios))), index=index, columns=[scenarios])
 clustercut_optgap = pd.DataFrame(np.zeros((len(instances), len(scenarios))), index=index, columns=[scenarios])
 
-# %%
 
+count = 0
 for file in files:
     for instance in instances:
         for scenario in scenarios:
+            # Print update statement
+            count += 1
+            print("{}. Currently solving {}, with {} facilities, {} customers and {} scenarios".format(count, file, instance[0], instance[1], scenario))
             # Get data for each experiment
             f, c, u, d, b = importData('Data/' + file + '.dat', I=25, J=50, S=5000)
 
@@ -64,7 +66,6 @@ for file in files:
             # Solve each model
             elapsed_time, UB, LB, NoIters, numCuts = MultiCut(f, c, u, d, b, p, tol, I, J, S)
 
-            print('MultiCut: UB = {}, LB = {}, Elapsed time = {} seconds, NoIters = {}, NumCuts = {}'.format(np.round(UB, 4), np.round(LB, 4), elapsed_time, NoIters, numCuts))
             multicut_times.loc[instance[0]*instance[1], scenario] += (1/3)*elapsed_time
             multicut_cuts.loc[instance[0] * instance[1], scenario] += (1/3)*numCuts
             multicut_iters.loc[instance[0] * instance[1], scenario] += (1 / 3) * NoIters
@@ -72,13 +73,12 @@ for file in files:
 
             elapsed_time, UB, LB, NoIters, numCuts = SingleCut(f, c, u, d, b, p, tol, I, J, S)
 
-            print('SingleCut: UB = {}, LB = {}, Elapsed time = {} seconds, NoIters = {}, NumCuts = {}'.format(np.round(UB, 4), np.round(LB, 4), elapsed_time, NoIters, numCuts))
             singlecut_times.loc[instance[0] * instance[1], scenario] += (1 / 3) * elapsed_time
             singlecut_cuts.loc[instance[0] * instance[1], scenario] += (1 / 3) * numCuts
             singlecut_iters.loc[instance[0] * instance[1], scenario] += (1 / 3) * NoIters
             singlecut_optgap.loc[instance[0] * instance[1], scenario] += np.round((1 / 3) * (UB - LB) / UB, 3)
 
-
+            # get epsilon for clustersub
             if instance[0]==5 and instance[1]==10:
                 eps = (0.5875 - 0.7)/(5000-1000) * (scenario - 1000) + 0.7
             elif instance[0]==10 and instance[1]==10:
@@ -88,13 +88,12 @@ for file in files:
 
             elapsed_time, UB, LB, NoIters, numCuts = ClusterSub_v2(f, c, u, d, b, p, tol, I, J, S, [eps, 3])
 
-            print('ClusterSub_v2: UB = {}, LB = {}, Elapsed time = {} seconds, NoIters = {}, NumCuts = {}'.format(np.round(UB, 4), np.round(LB, 4), elapsed_time, NoIters, numCuts))
             clustersub_times.loc[instance[0] * instance[1], scenario] += (1 / 3) * elapsed_time
             clustersub_cuts.loc[instance[0] * instance[1], scenario] += (1 / 3) * numCuts
             clustersub_iters.loc[instance[0] * instance[1], scenario] += (1 / 3) * NoIters
             clustersub_optgap.loc[instance[0] * instance[1], scenario] += np.round((1 / 3) * (UB - LB) / UB, 3)
 
-
+            # get epsilon for clustercut
             if instance[0]==5 and instance[1]==10:
                 eps = (0.01 - 0.2278)/(5000-1000) * (scenario - 1000) + 0.2278
             elif instance[0]==10 and instance[1]==10:
@@ -104,13 +103,10 @@ for file in files:
 
             elapsed_time, UB, LB, NoIters, numCuts = ClusterCut(f, c, u, d, b, p, tol, I, J, S, eps, 3)
 
-            print('ClusterCut: UB = {}, LB = {}, Elapsed time = {} seconds, NoIters = {}, NumCuts = {}\n'.format(np.round(UB, 4), np.round(LB, 4), elapsed_time, NoIters, numCuts))
             clustercut_times.loc[instance[0] * instance[1], scenario] += (1 / 3) * elapsed_time
             clustercut_cuts.loc[instance[0] * instance[1], scenario] += (1 / 3) * numCuts
             clustercut_iters.loc[instance[0] * instance[1], scenario] += (1 / 3) * NoIters
             clustercut_optgap.loc[instance[0] * instance[1], scenario] += np.round((1 / 3) * (UB - LB) / UB, 3)
-
-#%%
 
 # Save files
 multicut_times.to_pickle("Results/multicut_times.pkl")
@@ -158,7 +154,6 @@ clustercut_optgap = pd.read_pickle("Results/clustercut_optgap.pkl")
 
 
 #%%
-
 
 titles = ['5 Facilities, 10 Customers', '10 Facilities, 10 Customers', '10 Facilities, 15 Customers']
 
