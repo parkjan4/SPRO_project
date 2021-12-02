@@ -6,7 +6,7 @@ from Functions import *
 
 # %%
 
-files = ['cap101', 'cap102', 'cap103', ]
+files = ['cap102', 'cap103', 'cap104', ]
 
 ### instances = [numFac, numCust, eps, m]
 instances = [[5, 10, 0.03, 3], [10, 10, 0.03, 3], [10, 15, 0.03, 3]]
