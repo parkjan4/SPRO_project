@@ -236,7 +236,7 @@ def MultiCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K, 
     NoIters = 0
     BestUB = GRB.INFINITY
     numCuts = 0
-    while (CutFound):
+    while (CutFound and (time.perf_counter() - tic) < 3600):
         NoIters += 1
         CutFound = False
 
@@ -283,7 +283,7 @@ def MultiCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K, 
 
     toc = time.perf_counter()
     elapsed_time = (toc - tic)
-    return np.round(elapsed_time, 4), BestUB, NoIters
+    return np.round(elapsed_time, 4), BestUB, MPobj,  NoIters, numCuts
 
 
 def SC_ModifyAndSolveSP(k, SP, xsol, CapacityConsts, DemandConsts,
@@ -352,7 +352,7 @@ def SingleCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K,
     NoIters = 0
     BestUB = GRB.INFINITY
     numCuts = 0
-    while (CutFound):
+    while (CutFound and (time.perf_counter() - tic) < 3600):
         NoIters += 1
         CutFound = False
         numCuts += 1
@@ -403,7 +403,7 @@ def SingleCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K,
     toc = time.perf_counter()
     elapsed_time = (toc - tic)
 
-    return np.round(elapsed_time, 4), BestUB, NoIters
+    return np.round(elapsed_time, 4), BestUB, MPobj,  NoIters, numCuts
 
 
 def ClusterSub(theta_array, theta_s_array, h, g, I, demand, d, prob, Yn_array, N, K, tol, eps, min_samples):
@@ -466,7 +466,7 @@ def ClusterSub(theta_array, theta_s_array, h, g, I, demand, d, prob, Yn_array, N
     NoIters = 0
     BestUB = GRB.INFINITY
     numCuts = 0
-    while (CutFound):
+    while (CutFound and (time.perf_counter() - tic) < 3600):
         NoIters += 1
         CutFound = False
 
@@ -532,7 +532,7 @@ def ClusterSub(theta_array, theta_s_array, h, g, I, demand, d, prob, Yn_array, N
 
     toc = time.perf_counter()
     elapsed_time = (toc - tic)
-    return np.round(elapsed_time, 4), BestUB, NoIters, numCuts
+    return np.round(elapsed_time, 4), BestUB, MPobj,  NoIters, numCuts
 
 
 def ClusterCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K, tol, eps, min_samples):
@@ -592,7 +592,7 @@ def ClusterCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K
     BestUB = GRB.INFINITY
     numCuts = 0
     AvgClusterSize = 0
-    while (CutFound and NoIters < 200):
+    while (CutFound and (time.perf_counter() - tic) < 3600):
         NoIters += 1
         CutFound = False
 
@@ -691,4 +691,4 @@ def ClusterCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K
     toc = time.perf_counter()
     elapsed_time = (toc - tic)
     # return np.round(elapsed_time, 4), BestUB, NoIters, AvgClusterSize
-    return np.round(elapsed_time, 4), BestUB, NoIters, numCuts
+    return np.round(elapsed_time, 4), BestUB, MPobj,  NoIters, numCuts
