@@ -133,11 +133,35 @@ singlecut_optgap.to_pickle("Results/singlecut_optgap.pkl")
 clustersub_optgap.to_pickle("Results/clustersub_optgap.pkl")
 clustercut_optgap.to_pickle("Results/clustercut_optgap.pkl")
 
+#%%
+
+# Read pickled files
+multicut_times = pd.read_pickle("Results/multicut_times.pkl")
+singlecut_times = pd.read_pickle("Results/singlecut_times.pkl")
+clustersub_times = pd.read_pickle("Results/clustersub_times.pkl")
+clustercut_times = pd.read_pickle("Results/clustercut_times.pkl")
+
+multicut_cuts = pd.read_pickle("Results/multicut_cuts.pkl")
+singlecut_cuts = pd.read_pickle("Results/singlecut_cuts.pkl")
+clustersub_cuts = pd.read_pickle("Results/clustersub_cuts.pkl")
+clustercut_cuts = pd.read_pickle("Results/clustercut_cuts.pkl")
+
+multicut_iters = pd.read_pickle("Results/multicut_iters.pkl")
+singlecut_iters = pd.read_pickle("Results/singlecut_iters.pkl")
+clustersub_iters = pd.read_pickle("Results/clustersub_iters.pkl")
+clustercut_iters = pd.read_pickle("Results/clustercut_iters.pkl")
+
+multicut_optgap = pd.read_pickle("Results/multicut_optgap.pkl")
+singlecut_optgap = pd.read_pickle("Results/singlecut_optgap.pkl")
+clustersub_optgap = pd.read_pickle("Results/clustersub_optgap.pkl")
+clustercut_optgap = pd.read_pickle("Results/clustercut_optgap.pkl")
+
 
 #%%
 
 
 titles = ['5 Facilities, 10 Customers', '10 Facilities, 10 Customers', '10 Facilities, 15 Customers']
+
 i = 0
 for val in index:
     plt.figure()
