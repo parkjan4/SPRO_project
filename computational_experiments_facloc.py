@@ -15,7 +15,7 @@ index = [50, 100, 150]
 # index = [6, 9, 12]
 
 scenarios = [100, 500, 1000, 1500, 2000, 2500]
-# scenarios = [5, 100]
+# scenarios = [5, 50,]
 
 multicut_times = pd.DataFrame(np.zeros((len(instances), len(scenarios))), index=index, columns=[scenarios])
 singlecut_times = pd.DataFrame(np.zeros((len(instances), len(scenarios))), index=index, columns=[scenarios])
@@ -45,6 +45,7 @@ for file in files:
             # Print update statement
             count += 1
             print("{}. Currently solving {}, with {} facilities, {} customers and {} scenarios".format(count, file, instance[0], instance[1], scenario))
+
             # Get data for each experiment
             f, c, u, d, b = importData('Data/' + file + '.dat', I=25, J=50, S=5000)
 
