@@ -112,6 +112,31 @@ for file in files:
 
 #%%
 
+# Save files
+multicut_times.to_pickle("./multicut_times.pkl")
+singlecut_times.to_pickle("./singlecut_times.pkl")
+clustersub_times.to_pickle("./clustersub_times.pkl")
+clustercut_times.to_pickle("./clustercut_times.pkl")
+
+multicut_cuts.to_pickle("./multicut_cuts.pkl")
+singlecut_cuts.to_pickle("./singlecut_cuts.pkl")
+clustersub_cuts.to_pickle("./clustersub_cuts.pkl")
+clustercut_cuts.to_pickle("./clustercut_cuts.pkl")
+
+multicut_iters.to_pickle("./multicut_iters.pkl")
+singlecut_iters.to_pickle("./singlecut_iters.pkl")
+clustersub_iters.to_pickle("./clustersub_iters.pkl")
+clustercut_iters.to_pickle("./clustercut_iters.pkl")
+
+multicut_optgap.to_pickle("./multicut_optgap.pkl")
+singlecut_optgap.to_pickle("./singlecut_optgap.pkl")
+clustersub_optgap.to_pickle("./clustersub_optgap.pkl")
+clustercut_optgap.to_pickle("./clustercut_optgap.pkl")
+
+
+#%%
+
+
 titles = ['5 Facilities, 10 Customers', '10 Facilities, 10 Customers', '10 Facilities, 15 Customers']
 i = 0
 for val in index:
