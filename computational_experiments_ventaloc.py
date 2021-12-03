@@ -11,12 +11,6 @@ scenarios = [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]
 numCities = 20
 tol = 0.0001
 
-seeds = [1, 3]
-eps = np.array([0.00025, 0.0005, 0.001, 0.0015])
-scenarios = [10, 20, 30, 45, 100]
-numCities = 5
-tol = 0.0001
-
 multicut_times = pd.DataFrame(np.zeros(len(scenarios)), index=scenarios)
 clustercut_times = pd.DataFrame(np.zeros((len(scenarios), len(eps))), index=scenarios, columns=[eps])
 
