@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from functions_ventaloc import *
+import pickle5 as pickle
 
 #%%
 seeds = [1, 2, 3, 4, 5]
@@ -67,33 +68,49 @@ multicut_optgap.to_pickle("Results_ventaloc/multicut_optgap_ventaloc.pkl")
 clustercut_optgap.to_pickle("Results_ventaloc/clustercut_optgap_ventaloc.pkl")
 
 #%%
-
 # Read pickled files
-multicut_times = pd.read_pickle("Results_ventaloc/multicut_times_ventaloc.pkl")
-clustercut_times = pd.read_pickle("Results_ventaloc/clustercut_times_ventaloc.pkl")
+with open("Results_ventaloc/multicut_times_ventaloc.pkl", "rb") as fh:
+  multicut_times = pickle.load(fh)
+with open("Results_ventaloc/clustercut_times_ventaloc.pkl", "rb") as fh:
+  clustercut_times = pickle.load(fh)
 
-multicut_cuts = pd.read_pickle("Results_ventaloc/multicut_cuts_ventaloc.pkl")
-clustercut_cuts = pd.read_pickle("Results_ventaloc/clustercut_cuts_ventaloc.pkl")
+with open("Results_ventaloc/multicut_cuts_ventaloc.pkl", "rb") as fh:
+  multicut_cuts = pickle.load(fh)
+with open("Results_ventaloc/clustercut_cuts_ventaloc.pkl", "rb") as fh:
+  clustercut_cuts = pickle.load(fh)
 
-multicut_iters = pd.read_pickle("Results_ventaloc/multicut_iters_ventaloc.pkl")
-clustercut_iters = pd.read_pickle("Results/clustercut_iters_ventaloc.pkl")
+with open("Results_ventaloc/multicut_iters_ventaloc.pkl", "rb") as fh:
+  multicut_iters = pickle.load(fh)
+with open("Results_ventaloc/clustercut_iters_ventaloc.pkl", "rb") as fh:
+  clustercut_iters = pickle.load(fh)
 
-multicut_optgap = pd.read_pickle("Results_ventaloc/multicut_optgap_ventaloc.pkl")
-clustercut_optgap = pd.read_pickle("Results_ventaloc/clustercut_optgap_ventaloc.pkl")
+with open("Results_ventaloc/multicut_optgap_ventaloc.pkl", "rb") as fh:
+  multicut_optgap = pickle.load(fh)
+with open("Results_ventaloc/clustercut_optgap_ventaloc.pkl", "rb") as fh:
+  clustercut_optgap = pickle.load(fh)
+
+seeds = [1, 2, 3, 4, 5]
+eps = np.array([0.00025, 0.0005, 0.001, 0.0015])
+scenarios = [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]
+numCities = 20
+tol = 0.0001
 
 #%%
+plt.rcParams["mathtext.fontset"] = "cm"
+plt.rcParams.update({'font.size': 22})
 
 plt.figure()
-plt.plot(scenarios, multicut_times[0], label='MultiCut')
-plt.plot(scenarios, clustercut_times[0.00025], label='ClusterCut (eps=0.00025)')
-plt.plot(scenarios, clustercut_times[0.0005], label='ClusterCut (eps=0.0.0005)')
-plt.plot(scenarios, clustercut_times[0.001], label='ClusterCut (eps=0.001)')
-plt.plot(scenarios, clustercut_times[0.0015], label='ClusterCut (eps=0.0015)')
+plt.plot(scenarios, multicut_times[0], linewidth=4.0, label='MultiCut')
+plt.plot(scenarios, clustercut_times[0.00025], linewidth=4.0, label='ClusterCut ($\epsilon$=0.00025)')
+plt.plot(scenarios, clustercut_times[0.0005], linewidth=4.0, label='ClusterCut ($\epsilon$=0.0005)')
+plt.plot(scenarios, clustercut_times[0.001], linewidth=4.0, label='ClusterCut ($\epsilon$=0.001)')
+# plt.plot(scenarios, clustercut_times[0.0015], linewidth=4.0, label='ClusterCut ($\epsilon$=0.0015)')
 plt.xlabel('Number of Scenarios')
-plt.ylabel('Average Computation Time')
+plt.ylabel('Average Computation Time (Seconds)')
 box = plt.gca().get_position()
 plt.gca().set_position([box.x0, box.y0, box.width * 0.9, box.height])
 lgnd = plt.gca().legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
 
 #%%
 

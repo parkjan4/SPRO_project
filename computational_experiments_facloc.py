@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from Functions import *
+import pickle5 as pickle
 
 # %%
 
@@ -133,57 +134,89 @@ clustercut_optgap.to_pickle("Results/clustercut_optgap.pkl")
 #%%
 
 # Read pickled files
-multicut_times = pd.read_pickle("Results/multicut_times.pkl")
-singlecut_times = pd.read_pickle("Results/singlecut_times.pkl")
-clustersub_times = pd.read_pickle("Results/clustersub_times.pkl")
-clustercut_times = pd.read_pickle("Results/clustercut_times.pkl")
+with open("Results/multicut_times.pkl", "rb") as fh:
+  multicut_times = pickle.load(fh)
+with open("Results/singlecut_times.pkl", "rb") as fh:
+  singlecut_times = pickle.load(fh)
+with open("Results/clustersub_times.pkl", "rb") as fh:
+  clustersub_times = pickle.load(fh)
+with open("Results/clustercut_times.pkl", "rb") as fh:
+  clustercut_times = pickle.load(fh)
 
-multicut_cuts = pd.read_pickle("Results/multicut_cuts.pkl")
-singlecut_cuts = pd.read_pickle("Results/singlecut_cuts.pkl")
-clustersub_cuts = pd.read_pickle("Results/clustersub_cuts.pkl")
-clustercut_cuts = pd.read_pickle("Results/clustercut_cuts.pkl")
 
-multicut_iters = pd.read_pickle("Results/multicut_iters.pkl")
-singlecut_iters = pd.read_pickle("Results/singlecut_iters.pkl")
-clustersub_iters = pd.read_pickle("Results/clustersub_iters.pkl")
-clustercut_iters = pd.read_pickle("Results/clustercut_iters.pkl")
+with open("Results/multicut_cuts.pkl", "rb") as fh:
+  multicut_cuts = pickle.load(fh)
+with open("Results/singlecut_cuts.pkl", "rb") as fh:
+  singlecut_cuts = pickle.load(fh)
+with open("Results/clustersub_cuts.pkl", "rb") as fh:
+  clustersub_cuts = pickle.load(fh)
+with open("Results/clustercut_cuts.pkl", "rb") as fh:
+  clustercut_cuts = pickle.load(fh)
 
-multicut_optgap = pd.read_pickle("Results/multicut_optgap.pkl")
-singlecut_optgap = pd.read_pickle("Results/singlecut_optgap.pkl")
-clustersub_optgap = pd.read_pickle("Results/clustersub_optgap.pkl")
-clustercut_optgap = pd.read_pickle("Results/clustercut_optgap.pkl")
 
+with open("Results/multicut_iters.pkl", "rb") as fh:
+  multicut_iters = pickle.load(fh)
+with open("Results/singlecut_iters.pkl", "rb") as fh:
+  singlecut_iters = pickle.load(fh)
+with open("Results/clustersub_iters.pkl", "rb") as fh:
+  clustersub_iters = pickle.load(fh)
+with open("Results/clustercut_iters.pkl", "rb") as fh:
+  clustercut_iters = pickle.load(fh)
+
+with open("Results/multicut_optgap.pkl", "rb") as fh:
+  multicut_optgap = pickle.load(fh)
+with open("Results/singlecut_optgap.pkl", "rb") as fh:
+  singlecut_optgap = pickle.load(fh)
+with open("Results/clustersub_optgap.pkl", "rb") as fh:
+  clustersub_optgap = pickle.load(fh)
+with open("Results/clustercut_optgap.pkl", "rb") as fh:
+  clustercut_optgap = pickle.load(fh)
+
+
+instances = [[5, 10], [10, 10], [10, 15]]
+index = [50, 100, 150]
+scenarios = [100, 500, 1000, 1500, 2000, 2500]
 
 #%%
 
 titles = ['5 Facilities, 10 Customers', '10 Facilities, 10 Customers', '10 Facilities, 15 Customers']
 
+plt.rcParams["mathtext.fontset"] = "cm"
+plt.rcParams.update({'font.size': 20})
+
 i = 0
+plt.figure()
 for val in index:
-    plt.figure()
-    plt.plot(scenarios, multicut_times.loc[val], label='MultiCut')
+    plt.subplot(1, 3, i + 1)
+    # plt.plot(scenarios, multicut_times.loc[val], label='MultiCut')
     plt.plot(scenarios, singlecut_times.loc[val], label='SingleCut')
-    plt.plot(scenarios, clustersub_times.loc[val], label='ClusterSub')
-    plt.plot(scenarios, clustercut_times.loc[val], label='ClusterCut')
+    plt.plot(scenarios, clustersub_times.loc[val], label='Static Clustering')
+    plt.plot(scenarios, clustercut_times.loc[val], label='Dynamic Clustering')
 
     plt.xlabel('Number of Scenarios')
-    plt.ylabel('Average Computation Time')
     plt.title(titles[i])
     i += 1
 
-    box = plt.gca().get_position()
-    plt.gca().set_position([box.x0, box.y0, box.width * 0.9, box.height])
-    lgnd = plt.gca().legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    # plt.ylim(0, 700)
+
+    if i == 1:
+        plt.ylabel('Average Computation Time')
+
+    if i == 3:
+        box = plt.gca().get_position()
+        plt.gca().set_position([box.x0, box.y0, box.width * 0.9, box.height])
+        lgnd = plt.gca().legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
 #%%
 
 i = 0
+plt.figure()
 for val in index:
-    plt.figure()
-    plt.plot(scenarios, multicut_optgap.loc[val], label='MultiCut')
+    plt.subplot(1,3,i+1)
+    # plt.plot(scenarios, multicut_optgap.loc[val], label='MultiCut')
     plt.plot(scenarios, singlecut_optgap.loc[val], label='SingleCut')
-    plt.plot(scenarios, clustersub_optgap.loc[val], label='ClusterSub')
-    plt.plot(scenarios, clustercut_optgap.loc[val], label='ClusterCut')
+    plt.plot(scenarios, clustersub_optgap.loc[val], label='Static Clustering')
+    plt.plot(scenarios, clustercut_optgap.loc[val], label='Dynamic Clustering')
 
     plt.xlabel('Number of Scenarios')
     plt.ylabel('Average Optimality Gap')
@@ -197,37 +230,46 @@ for val in index:
 #%%
 
 i = 0
+plt.figure()
 for val in index:
-    plt.figure()
-    plt.plot(scenarios, multicut_iters.loc[val], label='MultiCut')
+    plt.subplot(1, 3, i + 1)
+    # plt.plot(scenarios, multicut_iters.loc[val], label='MultiCut')
     plt.plot(scenarios, singlecut_iters.loc[val], label='SingleCut')
-    plt.plot(scenarios, clustersub_iters.loc[val], label='ClusterSub')
-    plt.plot(scenarios, clustercut_iters.loc[val], label='ClusterCut')
+    plt.plot(scenarios, clustersub_iters.loc[val], label='Static Clustering')
+    plt.plot(scenarios, clustercut_iters.loc[val], label='Dynamic Clustering')
 
     plt.xlabel('Number of Scenarios')
-    plt.ylabel('Average Number of Iterations')
     plt.title(titles[i])
     i += 1
 
-    box = plt.gca().get_position()
-    plt.gca().set_position([box.x0, box.y0, box.width * 0.9, box.height])
-    lgnd = plt.gca().legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    if i == 1:
+        plt.ylabel('Average Number of Iterations')
+
+    if i == 3:
+        box = plt.gca().get_position()
+        plt.gca().set_position([box.x0, box.y0, box.width * 0.9, box.height])
+        lgnd = plt.gca().legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
 #%%
 
+plt.figure()
 i = 0
 for val in index:
-    plt.figure()
-    plt.plot(scenarios, multicut_cuts.loc[val], label='MultiCut')
+
+    plt.subplot(1, 3, i + 1)
+    # plt.plot(scenarios, multicut_cuts.loc[val], label='MultiCut')
     plt.plot(scenarios, singlecut_cuts.loc[val], label='SingleCut')
-    plt.plot(scenarios, clustersub_cuts.loc[val], label='ClusterSub')
-    plt.plot(scenarios, clustercut_cuts.loc[val], label='ClusterCut')
+    plt.plot(scenarios, clustersub_cuts.loc[val], label='Static Clustering')
+    plt.plot(scenarios, clustercut_cuts.loc[val], label='Dynamic Clustering')
 
     plt.xlabel('Number of Scenarios')
-    plt.ylabel('Average Number of Cuts')
     plt.title(titles[i])
     i += 1
 
-    box = plt.gca().get_position()
-    plt.gca().set_position([box.x0, box.y0, box.width * 0.9, box.height])
-    lgnd = plt.gca().legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    if i == 1:
+        plt.ylabel('Average Number of Cuts')
+
+    if i == 3:
+        box = plt.gca().get_position()
+        plt.gca().set_position([box.x0, box.y0, box.width * 0.9, box.height])
+        lgnd = plt.gca().legend(loc='center left', bbox_to_anchor=(1, 0.5))
