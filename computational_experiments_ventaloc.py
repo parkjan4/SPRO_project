@@ -97,20 +97,57 @@ tol = 0.0001
 
 #%%
 plt.rcParams["mathtext.fontset"] = "cm"
-plt.rcParams.update({'font.size': 22})
+plt.rcParams.update({'font.size': 20})
 
 plt.figure()
-plt.plot(scenarios, multicut_times[0], linewidth=4.0, label='MultiCut')
-plt.plot(scenarios, clustercut_times[0.00025], linewidth=4.0, label='ClusterCut ($\epsilon$=0.00025)')
-plt.plot(scenarios, clustercut_times[0.0005], linewidth=4.0, label='ClusterCut ($\epsilon$=0.0005)')
-plt.plot(scenarios, clustercut_times[0.001], linewidth=4.0, label='ClusterCut ($\epsilon$=0.001)')
+plt.plot(scenarios, multicut_times[0], linewidth=3.0, linestyle='-', marker='o', markersize=10, label='Multi-Cut')
+plt.plot(scenarios, clustercut_times[0.00025], linewidth=3.0, linestyle='-', marker='o', markersize=10, label='ClusterCut ($\epsilon$=0.00025)')
+plt.plot(scenarios, clustercut_times[0.0005], linewidth=3.0, linestyle='-', marker='o', markersize=10, label='ClusterCut ($\epsilon$=0.0005)')
+plt.plot(scenarios, clustercut_times[0.001], linewidth=3.0, linestyle='-', marker='o', markersize=10, label='ClusterCut ($\epsilon$=0.001)')
 # plt.plot(scenarios, clustercut_times[0.0015], linewidth=4.0, label='ClusterCut ($\epsilon$=0.0015)')
 plt.xlabel('Number of Scenarios')
-plt.ylabel('Average Computation Time (Seconds)')
-box = plt.gca().get_position()
-plt.gca().set_position([box.x0, box.y0, box.width * 0.9, box.height])
-lgnd = plt.gca().legend(loc='center left', bbox_to_anchor=(1, 0.5))
-
+plt.ylabel('Average Computation Time (s)')
+plt.grid()
+plt.xticks([100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000])
+plt.xlim(0, 5100)
+plt.gca().set_ylim(bottom=0)
+plt.gca().legend(loc='upper center', bbox_to_anchor=(0.5, 1.125),
+                  ncol=2, fancybox=True, shadow=True)
+plt.subplots_adjust(left=0.25, bottom=0.11, right=0.75, top=0.88, wspace=0.2, hspace=0.2)
 
 #%%
+
+plt.figure()
+plt.plot(scenarios, multicut_cuts[0], linewidth=3.0, linestyle='-', marker='o', markersize=10, label='Multi-Cut')
+plt.plot(scenarios, clustercut_cuts[0.00025], linewidth=3.0, linestyle='-', marker='o', markersize=10, label='ClusterCut ($\epsilon$=0.00025)')
+plt.plot(scenarios, clustercut_cuts[0.0005], linewidth=3.0, linestyle='-', marker='o', markersize=10, label='ClusterCut ($\epsilon$=0.0005)')
+plt.plot(scenarios, clustercut_cuts[0.001], linewidth=3.0, linestyle='-', marker='o', markersize=10, label='ClusterCut ($\epsilon$=0.001)')
+# plt.plot(scenarios, clustercut_cuts[0.0015], linewidth=4.0, label='ClusterCut ($\epsilon$=0.0015)')
+plt.xlabel('Number of Scenarios')
+plt.ylabel('Average Number of Cuts')
+plt.grid()
+plt.xticks([100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000])
+plt.xlim(0, 5100)
+plt.gca().set_ylim(bottom=0)
+plt.gca().legend(loc='upper center', bbox_to_anchor=(0.5, 1.125),
+                  ncol=2, fancybox=True, shadow=True)
+plt.subplots_adjust(left=0.25, bottom=0.11, right=0.75, top=0.88, wspace=0.2, hspace=0.2)
+
+#%%
+
+plt.figure()
+plt.plot(scenarios, multicut_iters[0], linewidth=3.0, linestyle='-', marker='o', markersize=10, label='Multi-Cut')
+plt.plot(scenarios, clustercut_iters[0.00025], linewidth=3.0, linestyle='-', marker='o', markersize=10, label='ClusterCut ($\epsilon$=0.00025)')
+plt.plot(scenarios, clustercut_iters[0.0005], linewidth=3.0, linestyle='-', marker='o', markersize=10, label='ClusterCut ($\epsilon$=0.0005)')
+plt.plot(scenarios, clustercut_iters[0.001], linewidth=3.0, linestyle='-', marker='o', markersize=10, label='ClusterCut ($\epsilon$=0.001)')
+# plt.plot(scenarios, clustercut_iters[0.0015], linewidth=4.0, label='ClusterCut ($\epsilon$=0.0015)')
+plt.xlabel('Number of Scenarios')
+plt.ylabel('Average Number of Iterations')
+plt.grid()
+plt.xticks([100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000])
+plt.xlim(0, 5100)
+# plt.gca().set_ylim(bottom=0)
+plt.gca().legend(loc='upper center', bbox_to_anchor=(0.5, 1.125),
+                  ncol=2, fancybox=True, shadow=True)
+plt.subplots_adjust(left=0.25, bottom=0.11, right=0.75, top=0.88, wspace=0.2, hspace=0.2)
 
