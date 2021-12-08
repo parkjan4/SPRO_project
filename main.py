@@ -10,9 +10,9 @@ from Functions import *
 f, c, u, d, b = importData('Data/cap101.dat', I=25, J=50, S=5000)
 
 # Now specify the reduced size that we care about
-I = 5
-J = 10
-S = 1000
+I = 10
+J = 15
+S = 2500
 f, c, u, d = reduceProblemSize(f, c, u, d, I, J, S)
 
 nS = len(d)  # the number of scenarios
@@ -44,7 +44,7 @@ from sklearn.cluster import DBSCAN
 import itertools
 from collections import Counter
 
-eps = np.linspace(0.01,0.5,num=10) # Equally spaced points
+eps = np.linspace(0.5,0.5,num=1) # Equally spaced points
 # eps = np.linspace(0.625,0.625,num=1)
 min_points = np.linspace(3,3,num=1)
 best_time = np.inf

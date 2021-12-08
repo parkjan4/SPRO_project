@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from Functions import *
-import pickle5 as pickle
+import pickle as pickle
 
 # %%
 
@@ -195,7 +195,6 @@ for val in index:
     plt.xticks([100, 500, 1000, 1500, 2000, 2500])
     plt.xlim(0, 2600)
     plt.gca().set_ylim(bottom=0)
-    plt.xlabel('Number of Scenarios \n {}'.format(labels[i]))
     i += 1
 
     if i == 1:
@@ -223,6 +222,7 @@ for val in index:
     plt.xlim(0, 2600)
     # plt.gca().set_ylim(bottom=0)
     plt.xlabel('Number of Scenarios \n {}'.format(labels[i]))
+    plt.title('I = {}, J = {}'.format(str(instances[i][0]), str(instances[i][1])))
     i += 1
 
     if i == 1:

@@ -11,7 +11,7 @@ for seed in seeds:
     # theta_array, theta_s_array, h, g, I, demand, prob, Yn_array = importData(1500)
     # seed = 33
     numCities = 20
-    numScen = 500
+    numScen = 5000
     theta_array, theta_s_array, h, g, I, demand, prob, Yn_array = generateData_ventaloc(numCities, numScen, seed)
     tol = 0.0001
     
@@ -25,8 +25,8 @@ for seed in seeds:
     # elapsed_time, Obj = ExtensiveForm(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K)
     # print('ExtensiveForm: Obj = {}, Elapsed time = {} seconds'.format(np.round(Obj,4), elapsed_time))
     
-    elapsed_time, Obj, NoIters = MultiCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K, tol)
-    print('MultiCut: Obj = {}, Elapsed time = {} seconds, NoIters = {}'.format(np.round(Obj,4), elapsed_time, NoIters))
+    # elapsed_time, Obj, NoIters = MultiCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K, tol)
+    # print('MultiCut: Obj = {}, Elapsed time = {} seconds, NoIters = {}'.format(np.round(Obj,4), elapsed_time, NoIters))
     
     # elapsed_time, Obj, NoIters = SingleCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K, tol)
     # print('SingleCut: Obj = {}, Elapsed time = {} seconds, NoIters = {}'.format(np.round(Obj,4), elapsed_time, NoIters))

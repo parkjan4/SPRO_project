@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from functions_ventaloc import *
-import pickle5 as pickle
+import pickle as pickle
 
 #%%
 seeds = [1, 2, 3, 4, 5]

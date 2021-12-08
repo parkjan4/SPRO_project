@@ -15,6 +15,7 @@ from Data import data_ventaloc_1500 as Data1500
 from Data import data_ventaloc_2500 as Data2500
 import itertools
 from collections import Counter
+from sklearn.metrics.pairwise import cosine_similarity as csim
 
 np.seterr(divide='ignore', invalid='ignore')
 
@@ -592,6 +593,8 @@ def ClusterCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K
     BestUB = GRB.INFINITY
     numCuts = 0
     AvgClusterSize = 0
+    prc_same99avg = 0
+    prc_same90avg = 0
     while (CutFound and (time.perf_counter() - tic) < 3600):
         NoIters += 1
         CutFound = False
@@ -637,11 +640,19 @@ def ClusterCut(theta_array, theta_s_array, h, g, I, demand, prob, Yn_array, N, K
             Cuts[k][0] = LinExpr(eta[k] - (sum(x[n] for n in N) - I) * gamma_sol[0] - sum(
                     pi_sol[n] * (demand[("C{}".format(n), scen_key)] - x[n] - Yn_array[n]) for n in N))
             Cuts[k][1] = CutFound_k
+    
         
         # Normalization and cluster        
         min_v = Cut_info.min(axis=0)
         max_v = Cut_info.max(axis=0)
         Cut_info_norm = np.nan_to_num((Cut_info - min_v) / (max_v - min_v), nan=0, posinf=0, neginf=0)
+        # Compute cosine similarity among dual solutions
+        sim = csim(Cut_info_norm[:,:-1])
+        prc_same99 = (sim>=0.99).sum() / (sim.shape[0] * sim.shape[1])
+        prc_same90 = (sim>=0.9).sum() / (sim.shape[0] * sim.shape[1])
+        prc_same99avg = (prc_same99avg*(NoIters-1) + prc_same99) / NoIters
+        prc_same90avg = (prc_same90avg*(NoIters-1) + prc_same90) / NoIters
+        print(prc_same99avg, prc_same90avg)
         # Drop components where there are no unique values
         Cut_info_norm = Cut_info_norm[:,~np.all(Cut_info_norm == 0, axis=0)]
         clusters = DBSCAN(eps=eps, min_samples=min_samples, n_jobs=-1).fit_predict(Cut_info_norm)
